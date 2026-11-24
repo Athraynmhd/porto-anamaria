@@ -6,7 +6,7 @@ import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight,Award,ChevronLeft,ChevronRight,Code,Trophy,ZoomIn } from "lucide-react";
-import { projects,certificates,awards } from "@/data/portfolio";
+import { useContent } from "./content-provider";
 import { PortfolioTransition } from "./portfolio-transition";
 import { Button } from "./ui/button";
 import { Dialog,DialogContent,DialogTitle,DialogDescription } from "./ui/dialog";
@@ -15,6 +15,7 @@ import { useSmoothScroll } from "./providers";
 const tabs=[{name:"Projects",icon:Code},{name:"Certificates",icon:Award},{name:"Awards",icon:Trophy}] as const;
 type Tab=typeof tabs[number]["name"];
 export function Portfolio({children}:{children:React.ReactNode}){
+  const {projects,certificates,awards}=useContent();
   const [tab,setTab]=useState<Tab>("Projects");
   const [preview,setPreview]=useState<{img:string;title:string}|null>(null);
   const [index,setIndex]=useState(0);

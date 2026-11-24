@@ -3,9 +3,10 @@ import { motion } from "@/lib/motion";
 import { useRef,useState } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
-import { gallery,profile } from "@/data/portfolio";
+import { useContent } from "./content-provider";
 import { Dialog,DialogContent,DialogTitle,DialogDescription } from "./ui/dialog";
 export function PhotoGallery(){
+  const {site,gallery}=useContent();const profile=site.profile;
   const ref=useRef<HTMLElement>(null);
   const [selected,setSelected]=useState<number|null>(null);
   useGSAP(()=>{const mm=gsap.matchMedia();mm.add({motion:"(prefers-reduced-motion: no-preference)",mobile:"(max-width: 767px)"},context=>{

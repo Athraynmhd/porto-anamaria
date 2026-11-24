@@ -1,5 +1,5 @@
 "use client";
-import { site } from "@/data/site";
+import { useContent } from "./content-provider";
 import { motion } from "@/lib/motion";
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
@@ -8,6 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(useGSAP,ScrollTrigger);
 
 export function Hero(){
+  const {site}=useContent();
   const ref=useRef<HTMLElement>(null);
   useGSAP(()=>{
     const mm=gsap.matchMedia();

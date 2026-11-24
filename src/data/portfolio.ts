@@ -11,7 +11,7 @@ export const education = [
   {
     company: "Universitas Syiah Kuala",
     role: "Sarjana Biologi",
-    year: "2022?2026",
+    year: "2022–2026",
     logo: "/content/wisuda.webp",
     subtitle: "FMIPA – Minat Ekologi",
     tag: "IPK 3,51/4,00",

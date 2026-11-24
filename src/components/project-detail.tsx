@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowLeft,Box,ChevronDown,ChevronRight,Code,ExternalLink } from "lucide-react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
-import { type Project } from "@/data/portfolio";
+import type { Project } from "@/lib/content";
 import { Button } from "./ui/button";
 import { Footer } from "./footer";
 import { Dialog,DialogContent,DialogTitle,DialogDescription } from "./ui/dialog";

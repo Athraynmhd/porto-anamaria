@@ -1,11 +1,10 @@
 "use client";
-import { site } from "@/data/site";
 import { revealOnScroll } from "@/lib/motion";
 import { useEffect,useRef,useState } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { Code,FileText } from "lucide-react";
-import { projects,certificates,awards,education,experiences,profile } from "@/data/portfolio";
+import { useContent } from "./content-provider";
 import { Button } from "./ui/button";
 import { Topography } from "./topography";
 import { useSmoothScroll } from "./providers";
@@ -21,6 +20,7 @@ function Timeline({title,entries}:{title:string;entries:Entry[]}){
   </div>{entries.length>3&&<div className="timeline-bottom"/>}</div>;
 }
 export function About(){
+  const {site,projects,certificates,awards,education,experiences}=useContent();const profile=site.profile;
   const ref=useRef<HTMLElement>(null);
   const [portraitPinned,setPortraitPinned]=useState(false);
   const [portraitHovered,setPortraitHovered]=useState(false);
