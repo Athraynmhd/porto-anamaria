@@ -3,7 +3,7 @@ import { useRef, useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { SETTINGS_SECTIONS, TABLES, slugify, type Field, type Level } from "../schema";
-import { deleteRow, moveRow, saveRow, saveSettings } from "./actions";
+import { deleteComment, deleteMessage, deleteRow, moveRow, saveRow, saveSettings, setCommentStatus, setMessageArchived } from "./actions";
 
 type Row = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 type Status = { kind: "ok" | "error"; text: string } | null;
@@ -195,6 +195,13 @@ function Guide({ go }: { go: (tab: Tab) => void }) {
         <li><strong>Jangan membagikan password</strong> admin, dan jangan memakai password yang mudah ditebak.</li>
       </ul>
 
+      <h3>Pesan dan komentar dari pengunjung</h3>
+      <ul>
+        <li><strong>Pesan</strong> dari form “Hubungi Saya” masuk ke tab Pesan. Gunakan “Balas lewat email”, lalu arsipkan setelah dibalas. Arsip bisa dikembalikan.</li>
+        <li><strong>Komentar</strong> baru <em>belum terlihat</em> di situs sampai Anda menyetujuinya di tab Komentar. “Arsipkan” menyembunyikannya lagi, dan Hapus menghilangkannya selamanya.</li>
+        <li>Jangan membalas pesan yang mencurigakan (meminta uang, data pribadi, atau mengajak klik tautan aneh). Arsipkan atau hapus saja.</li>
+      </ul>
+
       <h3>Aturan yang sudah dijaga otomatis</h3>
       <ul>
         <li>Alamat halaman proyek (slug) dibuat otomatis dari judul dan dikunci setelah disimpan.</li>
@@ -204,6 +211,110 @@ function Guide({ go }: { go: (tab: Tab) => void }) {
 
       <p className="adm-note">Kalau ada yang tampak rusak setelah mengubah sesuatu, jangan panik: kembalikan isinya seperti semula lalu simpan, atau hubungi pengelola situs.</p>
       <div className="adm-bar"><button className="adm-btn" onClick={() => go("Profil & SEO")}>Mulai mengedit</button></div>
+    </section>
+  );
+}
+
+type Outcome = { ok: boolean; error?: string };
+const dateText = (iso: string) => new Date(iso).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
+const mailtoOf = (email: string) => encodeURIComponent(email).replace(/%40/g, "@");
+
+/** Runs a server action, refreshes the list on success and shows the error otherwise. */
+function useItemAction() {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [error, setError] = useState("");
+  const [confirming, setConfirming] = useState(false);
+  const run = (fn: () => Promise<Outcome>) => start(async () => {
+    const res = await fn();
+    if (res.ok) { setError(""); router.refresh(); } else setError(res.error ?? "Gagal");
+  });
+  const askDelete = () => { setConfirming(true); setTimeout(() => setConfirming(false), 5000); };
+  return { pending, error, confirming, run, askDelete };
+}
+
+function Filter<T extends string>({ options, value, onChange }: { options: { id: T; label: string; count: number }[]; value: T; onChange: (v: T) => void }) {
+  return (
+    <div className="adm-filter" role="tablist">
+      {options.map(o => <button key={o.id} role="tab" aria-selected={value === o.id} className={value === o.id ? "on" : ""} onClick={() => onChange(o.id)}>{o.label} ({o.count})</button>)}
+    </div>
+  );
+}
+
+function MessageCard({ m }: { m: Row }) {
+  const { pending, error, confirming, run, askDelete } = useItemAction();
+  return (
+    <article className="adm-card adm-item">
+      <header>
+        <div><h3>{m.name}</h3><a href={`mailto:${mailtoOf(m.email)}`}>{m.email}</a></div>
+        <time dateTime={m.created_at} suppressHydrationWarning>{dateText(m.created_at)}</time>
+      </header>
+      <p className="adm-body">{m.message}</p>
+      <div className="adm-bar">
+        <a className="adm-btn" href={`mailto:${mailtoOf(m.email)}?subject=${encodeURIComponent("Re: Pesan dari portofolio")}`}>Balas lewat email</a>
+        {m.archived
+          ? <button className="adm-btn adm-btn-light" disabled={pending} onClick={() => run(() => setMessageArchived(m.id, false))}>Kembalikan dari arsip</button>
+          : <button className="adm-btn adm-btn-light" disabled={pending} onClick={() => run(() => setMessageArchived(m.id, true))}>Arsipkan</button>}
+        {confirming
+          ? <button className="adm-btn adm-btn-danger" disabled={pending} onClick={() => run(() => deleteMessage(m.id))}>Klik lagi untuk menghapus permanen</button>
+          : <button className="adm-btn adm-btn-light" onClick={askDelete}>Hapus</button>}
+        {error && <span className="adm-error" role="alert">{error}</span>}
+      </div>
+    </article>
+  );
+}
+
+function Inbox({ messages }: { messages: Row[] }) {
+  const [view, setView] = useState<"active" | "archived">("active");
+  const active = messages.filter(m => !m.archived), archived = messages.filter(m => m.archived);
+  const list = view === "active" ? active : archived;
+  return (
+    <section>
+      <div className="adm-head"><h2>Pesan masuk</h2></div>
+      <p className="adm-note">Pesan dari form “Hubungi Saya”. Arsipkan pesan yang sudah dibalas; arsip bisa dikembalikan kapan saja. Hapus bersifat permanen dan tidak bisa dibatalkan.</p>
+      <Filter value={view} onChange={setView} options={[{ id: "active", label: "Masuk", count: active.length }, { id: "archived", label: "Arsip", count: archived.length }]} />
+      {list.map(m => <MessageCard key={m.id + String(m.archived)} m={m} />)}
+      {!list.length && <p className="adm-note">{view === "active" ? "Belum ada pesan baru." : "Arsip kosong."}</p>}
+    </section>
+  );
+}
+
+type CommentStatus = "pending" | "approved" | "archived";
+function CommentCard({ c }: { c: Row }) {
+  const { pending, error, confirming, run, askDelete } = useItemAction();
+  const set = (status: CommentStatus) => run(() => setCommentStatus(c.id, status));
+  return (
+    <article className="adm-card adm-item">
+      <header>
+        <div><h3>{c.name}</h3></div>
+        <time dateTime={c.created_at} suppressHydrationWarning>{dateText(c.created_at)}</time>
+      </header>
+      <p className="adm-body">{c.message}</p>
+      <div className="adm-bar">
+        {c.status === "pending" && <button className="adm-btn" disabled={pending} onClick={() => set("approved")}>Setujui (tampilkan)</button>}
+        {c.status === "archived"
+          ? <button className="adm-btn adm-btn-light" disabled={pending} onClick={() => set("pending")}>Kembalikan dari arsip</button>
+          : <button className="adm-btn adm-btn-light" disabled={pending} onClick={() => set("archived")}>{c.status === "approved" ? "Sembunyikan (arsipkan)" : "Arsipkan"}</button>}
+        {confirming
+          ? <button className="adm-btn adm-btn-danger" disabled={pending} onClick={() => run(() => deleteComment(c.id))}>Klik lagi untuk menghapus permanen</button>
+          : <button className="adm-btn adm-btn-light" onClick={askDelete}>Hapus</button>}
+        {error && <span className="adm-error" role="alert">{error}</span>}
+      </div>
+    </article>
+  );
+}
+
+function Moderation({ comments }: { comments: Row[] }) {
+  const [view, setView] = useState<CommentStatus>("pending");
+  const by = (status: CommentStatus) => comments.filter(c => c.status === status);
+  const empty: Record<CommentStatus, string> = { pending: "Tidak ada komentar yang menunggu persetujuan.", approved: "Belum ada komentar yang tampil di situs.", archived: "Arsip kosong." };
+  return (
+    <section>
+      <div className="adm-head"><h2>Komentar pengunjung</h2></div>
+      <p className="adm-note">Komentar baru menunggu persetujuan dan belum terlihat oleh siapa pun. Setelah disetujui, komentar tampil di situs. “Arsipkan” menyembunyikan komentar dari situs; “Kembalikan dari arsip” memasukkannya lagi ke daftar menunggu. Hapus bersifat permanen.</p>
+      <Filter value={view} onChange={setView} options={[{ id: "pending", label: "Menunggu", count: by("pending").length }, { id: "approved", label: "Tampil", count: by("approved").length }, { id: "archived", label: "Arsip", count: by("archived").length }]} />
+      {by(view).map(c => <CommentCard key={c.id + c.status} c={c} />)}
+      {!by(view).length && <p className="adm-note">{empty[view]}</p>}
     </section>
   );
 }
@@ -234,11 +345,13 @@ function Account({ email }: { email: string }) {
   );
 }
 
-const TABS = ["Panduan", "Profil & SEO", "Proyek", "Pengalaman", "Sertifikat", "Galeri", "Kontak", "Akun"] as const;
+const TABS = ["Panduan", "Profil & SEO", "Proyek", "Pengalaman", "Sertifikat", "Galeri", "Tautan Kontak", "Pesan", "Komentar", "Akun"] as const;
 type Tab = (typeof TABS)[number];
 
-export function AdminApp({ email, settings, rows }: { email: string; settings: Row; rows: Record<string, Row[]> }) {
+export function AdminApp({ email, settings, rows, messages, comments }: { email: string; settings: Row; rows: Record<string, Row[]>; messages: Row[]; comments: Row[] }) {
   const [tab, setTab] = useState<Tab>("Panduan");
+  const unread = messages.filter(m => !m.archived).length, waiting = comments.filter(c => c.status === "pending").length;
+  const label = (t: Tab) => (t === "Pesan" && unread ? `Pesan (${unread})` : t === "Komentar" && waiting ? `Komentar (${waiting})` : t);
   return (
     <div className="adm-shell">
       <header className="adm-top">
@@ -246,7 +359,7 @@ export function AdminApp({ email, settings, rows }: { email: string; settings: R
         <a href="/" target="_blank" rel="noopener noreferrer">Lihat situs ↗</a>
       </header>
       <nav className="adm-tabs" role="tablist" aria-label="Bagian">
-        {TABS.map(t => <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? "on" : ""} onClick={() => setTab(t)}>{t}</button>)}
+        {TABS.map(t => <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? "on" : ""} onClick={() => setTab(t)}>{label(t)}</button>)}
       </nav>
       <main className="adm-main">
         {tab === "Panduan" && <Guide go={setTab} />}
@@ -255,7 +368,9 @@ export function AdminApp({ email, settings, rows }: { email: string; settings: R
         {tab === "Pengalaman" && <><Collection title="Pendidikan" table="timeline_entries" rows={rows.timeline_entries} fixed="education" /><Collection title="Pengalaman" table="timeline_entries" rows={rows.timeline_entries} fixed="experience" /></>}
         {tab === "Sertifikat" && <><Collection title="Sertifikat" table="credentials" rows={rows.credentials} fixed="certificate" /><Collection title="Penghargaan" table="credentials" rows={rows.credentials} fixed="award" /></>}
         {tab === "Galeri" && <Collection title="Foto galeri" table="gallery_photos" rows={rows.gallery_photos} note="Minimal harus ada 1 foto. Foto potret 4:5 paling pas." />}
-        {tab === "Kontak" && <Collection title="Kontak & publikasi" table="contact_links" rows={rows.contact_links} note="Pastikan setiap tautan benar-benar bisa dibuka setelah disimpan." />}
+        {tab === "Tautan Kontak" && <Collection title="Kontak & publikasi" table="contact_links" rows={rows.contact_links} note="Tautan yang tampil di kartu “Kontak & Publikasi” pada situs. Pastikan setiap tautan benar-benar bisa dibuka setelah disimpan." />}
+        {tab === "Pesan" && <Inbox messages={messages} />}
+        {tab === "Komentar" && <Moderation comments={comments} />}
         {tab === "Akun" && <Account email={email} />}
       </main>
     </div>

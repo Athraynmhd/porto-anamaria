@@ -10,9 +10,10 @@ export type Entry = { company: string; role: string; year: string; logo: string;
 export type Credential = { title: string; img: string };
 export type Photo = { src: string; alt: string };
 export type ContactLink = { name: string; handle: string; href: string; kind: string };
+export type PublicComment = { id: string; name: string; message: string; createdAt: string };
 export type Content = {
   site: SiteData; projects: Project[]; education: Entry[]; experiences: Entry[];
-  certificates: Credential[]; awards: Credential[]; gallery: Photo[]; contactLinks: ContactLink[];
+  certificates: Credential[]; awards: Credential[]; gallery: Photo[]; contactLinks: ContactLink[]; comments: PublicComment[];
 };
 
 /** Bundled copy of the original content, used when Supabase is unreachable or not configured. */
@@ -23,6 +24,7 @@ function bundled(): Content {
     education: fallback.education, experiences: fallback.experiences,
     certificates: fallback.certificates, awards: fallback.awards, gallery: fallback.gallery,
     contactLinks: fallback.contactLinks.map(l => ({ ...l })),
+    comments: [],
   };
 }
 
@@ -33,11 +35,12 @@ async function loadFromSupabase(): Promise<Content> {
   if (!url || !key) throw new Error("Supabase env not set");
   const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
   const ordered = (table: string) => db.from(table).select("*").order("sort_order").order("created_at");
-  const [s, p, t, c, g, l] = await Promise.all([
+  const [s, p, t, c, g, l, k] = await Promise.all([
     db.from("site_settings").select("*").eq("id", 1).maybeSingle(),
     ordered("projects"), ordered("timeline_entries"), ordered("credentials"), ordered("gallery_photos"), ordered("contact_links"),
+    db.from("comments").select("id,name,message,created_at").eq("status", "approved").order("created_at", { ascending: false }).limit(50),
   ]);
-  for (const r of [s, p, t, c, g, l]) if (r.error) throw r.error;
+  for (const r of [s, p, t, c, g, l, k]) if (r.error) throw r.error;
   const r = s.data as Row | null;
   if (!r) throw new Error("site_settings is empty");
 
@@ -59,6 +62,7 @@ async function loadFromSupabase(): Promise<Content> {
     awards: creds.filter(e => e.kind === "award").map(e => ({ title: e.title, img: e.img })),
     gallery: ((g.data ?? []) as Row[]).map(e => ({ src: e.src, alt: e.alt })),
     contactLinks: ((l.data ?? []) as Row[]).map(e => ({ name: e.name, handle: e.handle, href: e.href, kind: e.kind })),
+    comments: ((k.data ?? []) as Row[]).map(e => ({ id: e.id, name: e.name, message: e.message, createdAt: e.created_at })),
   };
 }
 

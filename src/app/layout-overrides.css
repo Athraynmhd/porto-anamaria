@@ -210,3 +210,5 @@
   .hero-tree { display: none; }
   .hero-title { opacity: 1; visibility: visible; }
 }
+
+.privacy-note { display: block; margin-top: 10px; color: #71717a; font-size: 13px; line-height: 1.4; }

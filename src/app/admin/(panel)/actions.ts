@@ -96,3 +96,47 @@ export async function moveRow(table: string, id: string, direction: "up" | "down
     return { ok: true };
   } catch (e) { return fail(msg(e)); }
 }
+
+// ---- Inbox (messages) and moderation (comments) ----
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const COMMENT_STATUS = ["pending", "approved", "archived"] as const;
+
+export async function setMessageArchived(id: string, archived: boolean): Promise<Result> {
+  try {
+    const supabase = await guard();
+    if (!UUID.test(id)) return fail("Data tidak valid");
+    const { error } = await supabase.from("messages").update({ archived: Boolean(archived) }).eq("id", id);
+    return error ? fail(error.message) : { ok: true };
+  } catch (e) { return fail(msg(e)); }
+}
+
+export async function deleteMessage(id: string): Promise<Result> {
+  try {
+    const supabase = await guard();
+    if (!UUID.test(id)) return fail("Data tidak valid");
+    const { error } = await supabase.from("messages").delete().eq("id", id);
+    return error ? fail(error.message) : { ok: true };
+  } catch (e) { return fail(msg(e)); }
+}
+
+export async function setCommentStatus(id: string, status: (typeof COMMENT_STATUS)[number]): Promise<Result> {
+  try {
+    const supabase = await guard();
+    if (!UUID.test(id) || !COMMENT_STATUS.includes(status)) return fail("Data tidak valid");
+    const { error } = await supabase.from("comments").update({ status }).eq("id", id);
+    if (error) return fail(error.message);
+    publish(); // approved comments are part of the public page
+    return { ok: true };
+  } catch (e) { return fail(msg(e)); }
+}
+
+export async function deleteComment(id: string): Promise<Result> {
+  try {
+    const supabase = await guard();
+    if (!UUID.test(id)) return fail("Data tidak valid");
+    const { error } = await supabase.from("comments").delete().eq("id", id);
+    if (error) return fail(error.message);
+    publish();
+    return { ok: true };
+  } catch (e) { return fail(msg(e)); }
+}

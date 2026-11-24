@@ -59,3 +59,13 @@
 .adm-upload details input[type=text]{width:100%;flex:none}
 .adm .adm-lv-locked input[type=text],.adm .adm-lv-locked select{background:#f3f4f6;color:#6b7280;cursor:not-allowed}
 .adm .adm-guide ul:not(.adm-legend){list-style:disc}
+
+/* Inbox and comment moderation */
+.adm-filter{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.adm-filter button{padding:7px 14px;border:1px solid #d1d5db;border-radius:999px;background:#fff;font:inherit;font-size:14px;font-weight:600;color:#4b5563;cursor:pointer}
+.adm-filter button.on{background:#111827;border-color:#111827;color:#fff}
+.adm-item header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.adm-item header a{color:#2c67ed;font-size:14px;word-break:break-all}
+.adm-item header time{color:#6b7280;font-size:13px;white-space:nowrap}
+.adm-body{margin:0 0 14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.adm a.adm-btn{text-decoration:none}
