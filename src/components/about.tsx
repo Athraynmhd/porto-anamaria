@@ -16,7 +16,7 @@ function Timeline({title,entries}:{title:string;entries:Entry[]}){
   const [active,setActive]=useState(0);
   return <div className="timeline-column"><h3>{title}</h3><div className="timeline-list" data-lenis-prevent={entries.length>3?"":undefined}>
     {entries.map((entry,i)=><button key={entry.company} type="button" className={`timeline-entry ${active===i?"selected":""}`} onMouseEnter={()=>setActive(i)} onClick={()=>setActive(i)} aria-pressed={active===i}>
-      <span className="timeline-number">{i+1}</span><span className="timeline-content"><span className="timeline-heading"><img src={entry.logo} alt="" loading="lazy"/><strong title={entry.company}>{entry.company}</strong><small>{entry.year}</small></span><span className="timeline-role">{entry.role}</span><span className="timeline-meta">{entry.subtitle}<span>•</span><span className="timeline-tag">{entry.tag}</span></span></span>
+      <span className="timeline-number">{i+1}</span><span className="timeline-content"><span className="timeline-heading"><img src={entry.logo} alt="" loading="lazy" decoding="async"/><strong title={entry.company}>{entry.company}</strong><small>{entry.year}</small></span><span className="timeline-role">{entry.role}</span><span className="timeline-meta">{entry.subtitle}<span>•</span><span className="timeline-tag">{entry.tag}</span></span></span>
     </button>)}
   </div>{entries.length>3&&<div className="timeline-bottom"/>}</div>;
 }
@@ -50,7 +50,7 @@ export function About(){
           setPortraitHovered(true);
         }
       }} onPointerLeave={()=>setPortraitHovered(false)}
-      onAnimationEnd={()=>setHint(false)} aria-label="Tampilkan potret Itadori" aria-pressed={portraitPinned}><img src={site.images.portrait} alt={profile.name} loading="lazy"/><img className="portrait-reveal" src={site.images.portraitReveal} alt="" loading="lazy"/></button>
+      onAnimationEnd={()=>setHint(false)} aria-label="Tampilkan potret Itadori" aria-pressed={portraitPinned}><img src={site.images.portrait} alt={profile.name} loading="lazy" decoding="async"/><img className="portrait-reveal" src={site.images.portraitReveal} alt="" loading="lazy" decoding="async"/></button>
       <div className="profile-description reveal"><p>{profile.description}</p><Button asChild><a href="#Portofolio" onClick={e=>{e.preventDefault();scrollTo("#Portofolio");}}><Code size={18}/>View Projects</a></Button></div>
       <div className="mobile-profile-actions"><Button asChild><a href={profile.cv} target="_blank" rel="noopener noreferrer"><FileText size={16}/>View CV</a></Button><Button asChild><a href="#Portofolio" onClick={e=>{e.preventDefault();scrollTo("#Portofolio");}}><Code size={18}/>View Projects</a></Button></div>
     </div><div className="timeline-grid reveal"><Timeline title="Education" entries={education}/><Timeline title="Experience" entries={experiences}/></div>

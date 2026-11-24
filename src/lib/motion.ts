@@ -3,8 +3,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 /** Shared motion tuning. Content changes do not need animation changes. */
 export const motion = {
-  wheelLerp: .085, // smaller = floatier scroll, larger = snappier
-  heroScrub: 1,
+  wheelLerp: .075, // smaller = floatier scroll, larger = snappier
+  heroScrub: 1.2,
   carouselScrub: .7,
   galleryScrub: .8,
   reveal: { distance: 36, duration: 1, exitDuration: .45, stagger: .09, ease: "expo.out" },
