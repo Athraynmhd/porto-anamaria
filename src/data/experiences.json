@@ -1,0 +1,50 @@
+[
+  {
+    "company": "Praktikum Biologi USK",
+    "role": "Asisten Laboratorium",
+    "year": "2023–2026",
+    "logo": "/content/praktikum.webp",
+    "subtitle": "FMIPA Universitas Syiah Kuala",
+    "tag": "Akademik"
+  },
+  {
+    "company": "Biofair 2026",
+    "role": "Narasumber Tour Laboratorium",
+    "year": "2026",
+    "logo": "/content/biofair.webp",
+    "subtitle": "Himpunan Mahasiswa Biologi USK",
+    "tag": "Narasumber"
+  },
+  {
+    "company": "Penelitian Lapangan Sabang",
+    "role": "Penelitian Ekologi Tumbuhan",
+    "year": "2026",
+    "logo": "/content/peta-jaboi.webp",
+    "subtitle": "Universitas Syiah Kuala",
+    "tag": "Riset"
+  },
+  {
+    "company": "Dinas Pertanian dan Perkebunan Aceh",
+    "role": "Magang Hortikultura",
+    "year": "Feb–Mei 2025",
+    "logo": "/content/hortikultura.webp",
+    "subtitle": "Banda Aceh",
+    "tag": "MBKM"
+  },
+  {
+    "company": "Saree",
+    "role": "Magang Lanjutan Hortikultura",
+    "year": "Mei 2025",
+    "logo": "/content/kegiatan-lapangan.webp",
+    "subtitle": "Aceh Besar",
+    "tag": "MBKM"
+  },
+  {
+    "company": "TAR UMT",
+    "role": "Peserta Student Mobility",
+    "year": "2024",
+    "logo": "/content/student-mobility.webp",
+    "subtitle": "Kuala Lumpur, Malaysia",
+    "tag": "Mobilitas"
+  }
+]

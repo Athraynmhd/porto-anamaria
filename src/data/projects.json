@@ -1,0 +1,86 @@
+[
+  {
+    "title": "Vegetasi dan Suhu Permukaan di Jaboi",
+    "slug": "vegetasi-geothermal-jaboi",
+    "img": "/content/peta-jaboi.webp",
+    "description": "Penelitian skripsi tentang vegetasi berdasarkan suhu permukaan tanah (Land Surface Temperature) di kawasan geothermal Jaboi, Sabang. Peta menunjukkan rencana lokasi penelitian, batas kawasan, serta zona yang menjadi fokus pengamatan lapangan.",
+    "tech_stack": [
+      "Ekologi tumbuhan",
+      "Observasi lapangan",
+      "Analisis spasial"
+    ],
+    "link": ""
+  },
+  {
+    "title": "Urban Heat Island Sabang",
+    "slug": "urban-heat-island-sabang",
+    "img": "/content/peta-uhi.webp",
+    "description": "Peta tematik sebaran Urban Heat Island (UHI) di Kota Sabang tahun 2025. Kelas warna memperlihatkan variasi intensitas panas antarwilayah.",
+    "tech_stack": [
+      "Penginderaan jauh",
+      "Analisis spasial",
+      "Kartografi"
+    ],
+    "link": ""
+  },
+  {
+    "title": "Indeks Vegetasi Lhokseumawe",
+    "slug": "indeks-vegetasi-lhokseumawe",
+    "img": "/content/peta-arvi.webp",
+    "description": "Pemetaan Atmospherically Resistant Vegetation Index (ARVI) untuk Kota Lhokseumawe tahun 2021. Peta memadukan batas administrasi dengan hasil perhitungan indeks vegetasi dari citra satelit.",
+    "tech_stack": [
+      "ARVI",
+      "Citra satelit",
+      "Kartografi"
+    ],
+    "link": ""
+  },
+  {
+    "title": "Indeks Vegetasi Aceh Tengah",
+    "slug": "indeks-vegetasi-aceh-tengah",
+    "img": "/content/peta-evi.webp",
+    "description": "Peta Enhanced Vegetation Index (EVI) Kabupaten Aceh Tengah tahun 2021. Gradasi warna memperlihatkan variasi nilai indeks vegetasi di dalam batas kabupaten.",
+    "tech_stack": [
+      "EVI",
+      "Analisis raster",
+      "Kartografi"
+    ],
+    "link": ""
+  },
+  {
+    "title": "Indeks Vegetasi Kabupaten Pidie",
+    "slug": "indeks-vegetasi-pidie",
+    "img": "/content/peta-savi.webp",
+    "description": "Peta Soil-Adjusted Vegetation Index (SAVI) Kabupaten Pidie tahun 2021. Legenda mengelompokkan hasil pemetaan menjadi beberapa kelas indeks vegetasi.",
+    "tech_stack": [
+      "SAVI",
+      "Penginderaan jauh",
+      "Kartografi"
+    ],
+    "link": ""
+  },
+  {
+    "title": "Penggunaan Lahan Pesisir",
+    "slug": "penggunaan-lahan-pesisir",
+    "img": "/content/peta-penggunaan-lahan.webp",
+    "description": "Peta penggunaan lahan di kawasan pesisir yang menampilkan kelas lahan, jaringan jalan, dan garis pantai pada basemap citra satelit.",
+    "tech_stack": [
+      "GIS",
+      "Pemetaan penggunaan lahan",
+      "Kartografi"
+    ],
+    "link": ""
+  },
+  {
+    "title": "Lokasi Sampling Euphorbia",
+    "slug": "lokasi-sampling-euphorbia",
+    "img": "/content/peta-euphorbia.webp",
+    "description": "Peta lokasi pengambilan sampel sepuluh spesies Euphorbia. Simbol titik menandai lokasi sampel dan warna membedakan negara pada peta.",
+    "tech_stack": [
+      "Google Earth Engine",
+      "Pemetaan titik",
+      "Kartografi"
+    ],
+    "link": ""
+  }
+]

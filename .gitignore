@@ -1,0 +1,30 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+.env*
+!.env.example
+
+# Sisa proses kloning & hasil tes lokal (tidak untuk publik)
+_archive/
+verification/
+playwright-report/
+test-results/
+
+# Dokumen pribadi (CV berisi no. HP & email)
+*.docx
+*.doc
+*.pdf
+!public/content/cv-ana-maria.pdf
+/na-20261124T140055Z-1-001/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.vercel
+
+# Log lokal
+debug.log
+*.log
