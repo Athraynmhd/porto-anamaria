@@ -1,7 +1,7 @@
 "use server";
 import { revalidatePath, updateTag } from "next/cache";
 import { getAdmin } from "@/lib/supabase/server";
-import { SETTINGS_FIELDS, TABLES, cleanRecord } from "../schema";
+import { MIN_ROWS, SETTINGS_FIELDS, TABLES, cleanRecord } from "../schema";
 
 type Result = { ok: true; id?: string } | { ok: false; error: string };
 type Values = Record<string, unknown>;
@@ -37,6 +37,9 @@ export async function saveRow(table: string, input: Values, id?: string): Promis
     const { values, error } = cleanRecord(def.fields, input);
     if (error || !values) return fail(error ?? "Data tidak valid");
     if (id) {
+      // The slug is the page address and the "kind" decides where a row lives: both are locked after creation.
+      delete values.slug;
+      if (def.hasKind) delete values.kind;
       const { error: dbError } = await supabase.from(table).update({ ...values, ...(table === "projects" ? { updated_at: new Date().toISOString() } : {}) }).eq("id", id);
       if (dbError) return fail(dbError.message.includes("duplicate") ? "Slug sudah dipakai proyek lain" : dbError.message);
       publish();
@@ -58,6 +61,11 @@ export async function deleteRow(table: string, id: string): Promise<Result> {
   try {
     const supabase = await guard();
     if (!tableOf(table)) return fail("Tabel tidak dikenal");
+    const min = MIN_ROWS[table];
+    if (min) {
+      const { count } = await supabase.from(table).select("id", { count: "exact", head: true });
+      if ((count ?? 0) <= min) return fail("Tidak bisa dihapus: situs harus punya minimal 1 isi di bagian ini. Tambahkan yang baru dulu, baru hapus yang lama.");
+    }
     const { error } = await supabase.from(table).delete().eq("id", id);
     if (error) return fail(error.message);
     publish();
