@@ -28,3 +28,6 @@ Thumbs.db
 # Log lokal
 debug.log
 *.log
+
+# Catatan internal (memuat detail infrastruktur)
+PROJECT_LOG.md
