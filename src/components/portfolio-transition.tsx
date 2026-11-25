@@ -22,9 +22,9 @@ export function PortfolioTransition({children}:{children:React.ReactNode}){
   const ctx=document.createElement('canvas').getContext('2d',{willReadFrequently:true});if(!ctx)return;
   const font=getComputedStyle(text).fontFamily;
   let disposed=false;
-  const reduced=matchMedia('(prefers-reduced-motion: reduce)');let frame=0,w=0,h=0,scale=1,zoom=1,center={x:0,y:0},focus:Focus|null=null,focuses:Focus[]=[],selected=-1;
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)');let frame=0,w=0,h=0,tz=1.7,compact=false,scale=1,zoom=1,center={x:0,y:0},focus:Focus|null=null,focuses:Focus[]=[],selected=-1;
   const draw=()=>{
-   frame=0;const progress=reduced.matches?0:clamp(-el.getBoundingClientRect().top/(h*1.7)),p=clamp(progress/.78),e=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+   frame=0;const progress=reduced.matches?0:clamp(-el.getBoundingClientRect().top/(h*tz)),p=clamp(progress/.78),e=compact?smooth(0,1,p):p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
    const magnify=Math.exp(Math.log(scale)+Math.log(zoom/scale)*e),pan=zoom===scale?0:(1/magnify-1/scale)/(1/zoom-1/scale),x=center.x+((focus?.x??center.x)-center.x)*pan,y=center.y+((focus?.y??center.y)-center.y)*pan,rotation=-4*smooth(.06,.5,p)*(1-smooth(.62,.92,p)),angle=rotation*Math.PI/180;
    const px=w/2/magnify,py=(.46*h+.04*h*e)/magnify;
    cp.setAttribute('transform',`scale(${magnify}) rotate(${rotation})`);text.setAttribute('transform',`translate(${Math.cos(angle)*px+Math.sin(angle)*py-x} ${-Math.sin(angle)*px+Math.cos(angle)*py-y})`);
@@ -36,7 +36,9 @@ export function PortfolioTransition({children}:{children:React.ReactNode}){
   };
   const select=(index:number)=>{focus=focuses.find(f=>f.index===index)??focus;selected=focus?.index??-1;zoom=focus?Math.max(scale,Math.hypot(w,h)/(1.35*focus.radius)):scale;draw();};
   const measure=()=>{
-   w=scene.clientWidth;h=reduced.matches?Math.min(innerHeight*.75,480):innerHeight;scene.style.height=`${h}px`;art.setAttribute('viewBox',`0 0 ${w} ${h}`);
+   compact=matchMedia('(max-width: 767px)').matches;tz=parseFloat(getComputedStyle(el).getPropertyValue('--zoom-length'))||1.7;
+   if(reduced.matches){h=Math.min(innerHeight*.75,480);scene.style.height=`${h}px`;}else{scene.style.height='';h=scene.clientHeight;}
+   w=scene.clientWidth;art.setAttribute('viewBox',`0 0 ${w} ${h}`);
    ctx.font=`800 100px ${font}`;ctx.fontKerning='none';const metrics=ctx.measureText(word),width=(metrics.actualBoundingBoxLeft||0)+(metrics.actualBoundingBoxRight||metrics.width),height=(metrics.actualBoundingBoxAscent||75)+(metrics.actualBoundingBoxDescent||20),bx=-(metrics.actualBoundingBoxLeft||0),by=-(metrics.actualBoundingBoxAscent||75);
    center={x:bx+width/2,y:by+height/2};scale=Math.max(.1,Math.min(.84*w/width,.38*h/height));focuses=[];
    for(let i=0;i<word.length;i++){
@@ -49,9 +51,9 @@ export function PortfolioTransition({children}:{children:React.ReactNode}){
   const scroll=()=>{if(!frame)frame=requestAnimationFrame(draw);};
   const choose=(e:Event)=>{if(Number(el.dataset.progress)>=.04)return;const b=(e.target as HTMLElement).closest<HTMLButtonElement>('button[data-letter]');if(b)select(Number(b.dataset.letter));};
   const key=(e:KeyboardEvent)=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const index=e.key==='Home'?0:e.key==='End'?word.length-1:(selected+(e.key==='ArrowLeft'?-1:1)+word.length)%word.length;select(index);buttons[index].focus({preventScroll:true});};
-  const observer=new ResizeObserver(measure);observer.observe(scene);window.addEventListener('scroll',scroll,{passive:true});window.addEventListener('resize',measure);reduced.addEventListener('change',measure);choices.current?.addEventListener('pointerover',choose);choices.current?.addEventListener('click',choose);choices.current?.addEventListener('focusin',choose);choices.current?.addEventListener('keydown',key);measure();
+  const observer=new ResizeObserver(measure);observer.observe(scene);window.addEventListener('scroll',scroll,{passive:true});reduced.addEventListener('change',measure);choices.current?.addEventListener('pointerover',choose);choices.current?.addEventListener('click',choose);choices.current?.addEventListener('focusin',choose);choices.current?.addEventListener('keydown',key);measure();
   void document.fonts.ready.then(()=>{if(!disposed)measure();});
-  const picker=choices.current;return ()=>{disposed=true;cancelAnimationFrame(frame);observer.disconnect();window.removeEventListener('scroll',scroll);window.removeEventListener('resize',measure);reduced.removeEventListener('change',measure);picker?.removeEventListener('pointerover',choose);picker?.removeEventListener('click',choose);picker?.removeEventListener('focusin',choose);picker?.removeEventListener('keydown',key);};
+  const picker=choices.current;return ()=>{disposed=true;cancelAnimationFrame(frame);observer.disconnect();window.removeEventListener('scroll',scroll);reduced.removeEventListener('change',measure);picker?.removeEventListener('pointerover',choose);picker?.removeEventListener('click',choose);picker?.removeEventListener('focusin',choose);picker?.removeEventListener('keydown',key);};
  },[id]);
  return <section id="Portofolio" className="portfolio-shell" ref={root}><div className="transition-sticky" ref={pin}><Topography/><svg ref={svg} className="transition-art" aria-hidden="true"><defs><clipPath id={id} ref={clip} clipPathUnits="userSpaceOnUse"><text ref={glyph} x="0" y="0" style={{fontFamily:"var(--font-sans)",fontWeight:800,fontSize:100,fontKerning:'none',fontVariantLigatures:'none',letterSpacing:0}}>{word}</text></clipPath></defs><rect ref={field} x="0" y="0" width="100%" height="100%" fill="#fafafa" clipPath={`url(#${id})`}/></svg><div ref={choices} className="transition-choices" role="radiogroup" aria-label="Choose the letter to enter through">{[...word].map((char,i)=><button key={i} data-letter={i} type="button" role="radio" aria-checked="false" tabIndex={-1} aria-label={`${char}, letter ${i+1} of 10`}/>)}</div><a className="transition-enter" href="#Portofolio-content" aria-label="Lihat portofolio">↘</a></div><div ref={content} id="Portofolio-content" className="portfolio-content"><Topography tone="light"/>{children}</div></section>;
 }

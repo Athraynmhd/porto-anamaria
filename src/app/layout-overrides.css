@@ -212,3 +212,8 @@
 }
 
 .privacy-note { display: block; margin-top: 10px; color: #71717a; font-size: 13px; line-height: 1.4; }
+
+/* Zoom-through-the-word length, in screen heights. Phones get a longer, gentler zoom. JS reads --zoom-length too. */
+.portfolio-shell { --zoom-length: 1.7; }
+.portfolio-content { margin-top: calc((var(--zoom-length) - 1) * 100svh); }
+@media (max-width: 767px) { .portfolio-shell { --zoom-length: 2.4; } }
